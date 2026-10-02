@@ -43,17 +43,19 @@ jobs:
               .filter(a => a.name === "xueqiu-watchlist-state" && !a.expired)
               .sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at))[0];
             core.setOutput("artifact_id", previous ? String(previous.id) : "");
+            core.setOutput("run_id", previous?.workflow_run?.id ? String(previous.workflow_run.id) : "");
 
       - name: Download previous encrypted state
-        if: steps.previous.outputs.artifact_id != ''
+        if: steps.previous.outputs.artifact_id != '' && steps.previous.outputs.run_id != ''
         uses: actions/download-artifact@v4
         with:
           artifact-ids: ${{ steps.previous.outputs.artifact_id }}
+          run-id: ${{ steps.previous.outputs.run_id }}
           path: state-in
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Restore database
-        if: steps.previous.outputs.artifact_id != ''
+        if: steps.previous.outputs.artifact_id != '' && steps.previous.outputs.run_id != ''
         env:
           STATE_ENCRYPTION_KEY: ${{ secrets.STATE_ENCRYPTION_KEY }}
         run: python -m cloud.state_crypto decrypt --input state-in/watchlist.sqlite3.enc --db data/xueqiu_watchlist.sqlite3
