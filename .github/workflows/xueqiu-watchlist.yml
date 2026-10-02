@@ -51,6 +51,7 @@ jobs:
         with:
           artifact-ids: ${{ steps.previous.outputs.artifact_id }}
           run-id: ${{ steps.previous.outputs.run_id }}
+          merge-multiple: true
           path: state-in
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
